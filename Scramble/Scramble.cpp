@@ -2,6 +2,7 @@
 //
 
 #include "stdafx.h"
+#include <iostream>
 #include <SFML/Graphics.hpp>
 
 #define WINDOW_WIDTH 1000
@@ -10,13 +11,14 @@
 int main() {
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Scramble_Game");
+	
+	sf::Texture texture;
 
-	//Limit the framerate to 60 frames per second
-	window.setFramerateLimit(60);
-
-
-	sf::CircleShape shape(100.f);
-	shape.setFillColor(sf::Color::Green);
+	if (!texture.loadFromFile("test.jpg")) {
+		return EXIT_FAILURE;
+	}
+	sf::Sprite sprite;
+	sprite.setTexture(texture);
 
 	while (window.isOpen())
 	{
@@ -28,10 +30,9 @@ int main() {
 		}
 
 		window.clear();
-		window.draw(shape);
+		window.draw(sprite);
 		window.display();
 	}
 
-    return EXIT_SUCCESS;
+	return 0;
 }
-
