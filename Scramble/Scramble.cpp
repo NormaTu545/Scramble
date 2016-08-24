@@ -2,24 +2,37 @@
 //
 
 #include "stdafx.h"
+#include "Player.h"
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
 #define WINDOW_WIDTH 1000
 #define WINDOW_HEIGHT 500
 
+using namespace std;
+
 int main() {
+	bool game_over = false;
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Scramble_Game");
 	
-	sf::Texture texture;
+	//[Loading Stuff]-------------------------------------------------------------------
 
-	if (!texture.loadFromFile("test.jpg")) {
+	sf::Texture outer_space;
+
+	if (!outer_space.loadFromFile("space.jpg")) {
+		cout << "Couldn't load space.jpg!" << endl;
 		return EXIT_FAILURE;
 	}
-	sf::Sprite sprite;
-	sprite.setTexture(texture);
-	sprite.setScale(1.6, 1.5);
+
+	sf::Sprite background;
+	background.setTexture(outer_space);
+	
+	/* Scale background manually to fit the window */
+	background.setScale(1.6f, 1.5f);
+
+	Player player(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+	//[Actual Game Loop]--------------------------------------------------
 
 	while (window.isOpen())
 	{
@@ -30,8 +43,31 @@ int main() {
 				window.close();
 		}
 
+		//~~[KEY EVENT HANDLING]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
+			player.move_up();
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+			player.move_down();
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+			player.move_left();
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+			player.move_right();
+		}
+
+
+		//~~~~~~~~~~~~~~~~~~~~~~~[UPDATE]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+		if (!game_over) {
+			player.update();
+		}
+
+
 		window.clear();
-		window.draw(sprite);
+		window.draw(background);
+		window.draw(player.get_shape());
 		window.display();
 	}
 
