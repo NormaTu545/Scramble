@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "Player.h"
-
+#include "Laser.h"
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
@@ -16,6 +16,7 @@ Player::Player(float startX, float startY) {
 	position.x = startX;
 	position.y = startY;
 
+	//--Set up player IMG loading--//
 	if (!player_image.loadFromFile("player.png")) {
 		cout << "Couldn't load player.png!" << endl;
 	}
@@ -30,10 +31,27 @@ sf::FloatRect Player::get_position() {
 	return player_shape.getGlobalBounds();
 }
 
-sf::RectangleShape Player::get_shape() {
-	return player_shape;
+sf::RectangleShape* Player::get_shape() {
+	sf::RectangleShape* p = &player_shape;
+	return p;
 }
 
+sf::RectangleShape Player::fire_laser() {
+	/*
+	* Calls AttackObject Laser.move(ship.x, ship.y) to x=WINDOW_WIDTH
+	* If laser collides with enemy, grant points and delete enemy instance
+	*/
+	sf::FloatRect currPos = Player::get_position();
+	sf::Vector2f ship_right_side(currPos.left + SHIP_WIDTH, currPos.top);
+	Laser pew(ship_right_side); //Spawn laser at right of image
+
+	return pew.get_shape();
+}
+/*
+sf::RectangleShape Player::drop_bomb() {
+
+}
+*/
 void Player::move_up() {
 	position.y -= ship_speed;
 }

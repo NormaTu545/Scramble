@@ -14,7 +14,9 @@ public:
 	Player(float startX, float startY);
 	
 	sf::FloatRect get_position(); //will use for collision detection
-	sf::RectangleShape get_shape(); //passes copy of shape for drawing
+	sf::RectangleShape* get_shape(); //passes copy of shape for drawing
+	sf::RectangleShape fire_laser(); //like void and then returns for drawing
+	//sf::RectangleShape drop_bomb();
 
 	void move_up(); //adds ship_speed to y position
 	void move_down(); //subtracts ship_speed from y position
