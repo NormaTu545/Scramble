@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "Player.h"
+#include "Laser.h"
 #include <iostream>
 #include <vector>
 #include <SFML/Graphics.hpp>
@@ -14,12 +15,12 @@ using namespace std;
 
 int main() {
 	vector<sf::RectangleShape*> image_draw_list = *(new vector<sf::RectangleShape*>());
-
+	vector<Laser*> lasers;
 	bool game_over = false;
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Scramble_Game");
 	
-	//[Loading Stuff]-------------------------------------------------------------------
+	//--[Loading Game Stuff]-----------------------------------------------------------------
 
 	sf::Texture outer_space;
 
@@ -31,11 +32,14 @@ int main() {
 	sf::Sprite background;
 	background.setTexture(outer_space);
 	
+
 	/* Scale background manually to fit the window */
 	background.setScale(1.6f, 1.5f);
 	
-	Player player(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
-	image_draw_list.push_back(player.get_shape());
+	/* Make a player */
+	Player player(WINDOW_WIDTH / 3, WINDOW_HEIGHT / 2);
+	image_draw_list.push_back(player.get_shape()); //add to draw list
+
 	//[Actual Game Loop]--------------------------------------------------
 
 	while (window.isOpen())
@@ -62,22 +66,38 @@ int main() {
 			player.move_right();
 		}
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
-			
-			//image_draw_list.push_back(player.fire_laser());
-		}
+			//Fires a laser & adds that instance to draw list 
 
+			sf::FloatRect currPos = player.get_position();
+			sf::Vector2f ship_right_side(currPos.left + SHIP_WIDTH, currPos.top);
+
+			Laser* pew = new Laser(ship_right_side); //Spawn laser at right of image
+			//Add to list of lasers
+			lasers.push_back(pew);
+			sf::RectangleShape* shape = pew->getShape();
+			image_draw_list.push_back(shape);
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
+
+			//image_draw_list.push_back(player.drop_bomb());
+		}
 
 		//~~~~~~~~~~~~~~~~~~~~~~~[UPDATE]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 		if (!game_over) {
 			player.update();
-		}
 
+			for (int i = 0; i < lasers.size(); i++) {
+				lasers[i]->move();
+			}
+		}
 
 		window.clear();
 		window.draw(background);
-		//window.draw(player.get_shape());
+		//Draw all images mapped to a RecangleShape
 		for (int i = 0; i < image_draw_list.size(); i++) {
-			window.draw(*image_draw_list[i]);
+				window.draw(*image_draw_list[i]);
+
+	
 		}
 
 		window.display();

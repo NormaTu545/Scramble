@@ -4,8 +4,8 @@
 using namespace std;
 Laser::Laser(sf::Vector2f spawnPos) {
 	moveDirection = *(new sf::Vector2f(1, 0)); //1 in X direction, 0 in Y direction
-	setUpInstance(spawnPos);
-
+	position = spawnPos;
+	//attack_shape = *(new sf::RectangleShape());
 	//--Set up Laser IMG loading--//
 	if (!image.loadFromFile("laser.png")) {
 		cout << "Couldn't load laser.png!" << endl;
@@ -22,6 +22,10 @@ void Laser::move() {
 
 	if (position.x > WINDOW_WIDTH) {
 		//Delete instance of laser
-		destroy();  
+		delete(this);
 	}
+}
+
+sf::RectangleShape* Laser::getShape() {
+	return &attack_shape;
 }

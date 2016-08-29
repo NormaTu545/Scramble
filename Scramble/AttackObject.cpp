@@ -23,14 +23,7 @@ AttackObject::AttackObject() {
 void AttackObject::destroy() {
 	delete(this);
 }
-void AttackObject::setUpInstance(sf::Vector2f startPos) {
-	position = startPos;
 
-}
-
-sf::RectangleShape AttackObject::get_shape() {
-	return attack_shape;
-}
 void AttackObject::move() {
 
 }

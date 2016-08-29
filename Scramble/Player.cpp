@@ -4,14 +4,10 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-#define WINDOW_WIDTH 1000
-#define WINDOW_HEIGHT 500
-#define SHIP_WIDTH 75
-#define SHIP_HEIGHT 50
-
 using namespace std;
 
 //--Constructor here---------------------------------------------
+
 Player::Player(float startX, float startY) {
 	position.x = startX;
 	position.y = startY;
@@ -32,23 +28,27 @@ sf::FloatRect Player::get_position() {
 }
 
 sf::RectangleShape* Player::get_shape() {
-	sf::RectangleShape* p = &player_shape;
-	return p;
+	sf::RectangleShape* pointer = &player_shape;
+	return pointer;
 }
 
-sf::RectangleShape Player::fire_laser() {
+sf::RectangleShape* Player::fire_laser() {
 	/*
 	* Calls AttackObject Laser.move(ship.x, ship.y) to x=WINDOW_WIDTH
 	* If laser collides with enemy, grant points and delete enemy instance
 	*/
+
 	sf::FloatRect currPos = Player::get_position();
 	sf::Vector2f ship_right_side(currPos.left + SHIP_WIDTH, currPos.top);
-	Laser pew(ship_right_side); //Spawn laser at right of image
-
-	return pew.get_shape();
+	
+	Laser* pew = new Laser(ship_right_side); //Spawn laser at right of image
+//	sf::RectangleShape shape = pew->getShape();
+	sf::RectangleShape* pointer = pew->getShape();
+	return pointer;
 }
+
 /*
-sf::RectangleShape Player::drop_bomb() {
+sf::RectangleShape* Player::drop_bomb() {
 
 }
 */
