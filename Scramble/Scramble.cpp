@@ -14,7 +14,7 @@
 using namespace std;
 
 int main() {
-	vector<sf::RectangleShape*> image_draw_list = *(new vector<sf::RectangleShape*>());
+	
 	vector<Laser*> lasers;
 	bool game_over = false;
 
@@ -38,7 +38,7 @@ int main() {
 	
 	/* Make a player */
 	Player player(WINDOW_WIDTH / 3, WINDOW_HEIGHT / 2);
-	image_draw_list.push_back(player.get_shape()); //add to draw list
+	
 
 	//[Actual Game Loop]--------------------------------------------------
 
@@ -56,26 +56,26 @@ int main() {
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
 			player.move_up();
 		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down)) {
 			player.move_down();
 		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
 			player.move_left();
 		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
 			player.move_right();
 		}
-		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
 			//Fires a laser & adds that instance to draw list 
+			if (player.fireRateTimer >= 5) {
+				sf::FloatRect currPos = player.get_position();
+				sf::Vector2f ship_right_side(currPos.left + SHIP_WIDTH, currPos.top);
 
-			sf::FloatRect currPos = player.get_position();
-			sf::Vector2f ship_right_side(currPos.left + SHIP_WIDTH, currPos.top);
-
-			Laser* pew = new Laser(ship_right_side); //Spawn laser at right of image
-			//Add to list of lasers
-			lasers.push_back(pew);
-			sf::RectangleShape* shape = pew->getShape();
-			image_draw_list.push_back(shape);
+				Laser* pew = new Laser(ship_right_side); //Spawn laser at right of image
+				//Add to list of lasers
+				lasers.push_back(pew);
+				player.fireRateTimer = 0;
+			}
 		}
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
 
@@ -83,22 +83,31 @@ int main() {
 		}
 
 		//~~~~~~~~~~~~~~~~~~~~~~~[UPDATE]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+		
+		window.clear();
 		if (!game_over) {
 			player.update();
-
-			for (int i = 0; i < lasers.size(); i++) {
-				lasers[i]->move();
+			for (int index = 0; index < lasers.size(); index++) {
+			
+				lasers[index]->move();
+				if (lasers[index]->position.x > WINDOW_WIDTH) {
+					//Delete instance of laser
+					vector<Laser*>::iterator k = lasers.begin();
+					k += index;
+					delete(lasers[index]);
+					lasers.erase(k);
+				}
+				
 			}
 		}
+		
 
-		window.clear();
 		window.draw(background);
-		//Draw all images mapped to a RecangleShape
-		for (int i = 0; i < image_draw_list.size(); i++) {
-				window.draw(*image_draw_list[i]);
-
-	
+		window.draw(*player.get_shape());
+		for (int i = 0; i < lasers.size(); i++) {
+			window.draw(*(lasers[i]->getShape()));
 		}
+		//Draw all images mapped to a RecangleShape
 
 		window.display();
 	}

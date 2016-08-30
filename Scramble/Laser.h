@@ -1,7 +1,8 @@
 #pragma once
-#include "AttackObject.h"
+//#include "AttackObject.h"
 #include "SFML\Graphics.hpp"
-
+#include <vector>
+#include <iostream>
 #define LASER_HEIGHT 10
 #define LASER_WIDTH 30
 #define LASER_SPEED 2.0f

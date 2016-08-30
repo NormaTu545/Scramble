@@ -12,9 +12,9 @@ private:
 	sf::RectangleShape player_shape;
 
 	const float ship_speed = 1.0f;
-	float fireRateTimer;
+
 public:
-	const float fireRate = 2.0f;
+	float fireRateTimer = 0;
 	
 	Player(float startX, float startY);
 	

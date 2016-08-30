@@ -70,6 +70,7 @@ void Player::move_right() {
 
 void Player::update() {
 	player_shape.setPosition(position);
+	fireRateTimer += 0.1f; //counts how many frames have passed
 
 	//Lock position of our spaceship to stay onscreen.
 	if (position.y < 0) {
