@@ -34,15 +34,13 @@ sf::RectangleShape* Player::get_shape() {
 
 sf::RectangleShape* Player::fire_laser() {
 	/*
-	* Calls AttackObject Laser.move(ship.x, ship.y) to x=WINDOW_WIDTH
 	* If laser collides with enemy, grant points and delete enemy instance
 	*/
 
 	sf::FloatRect currPos = Player::get_position();
-	sf::Vector2f ship_right_side(currPos.left + SHIP_WIDTH, currPos.top);
+	sf::Vector2f ship_right_side(currPos.left + SHIP_WIDTH, currPos.top + SHIP_HEIGHT/2);
 	
-	Laser* pew = new Laser(ship_right_side); //Spawn laser at right of image
-//	sf::RectangleShape shape = pew->getShape();
+	Laser* pew = new Laser(ship_right_side); //Spawn laser at right of ship image
 	sf::RectangleShape* pointer = pew->getShape();
 	return pointer;
 }

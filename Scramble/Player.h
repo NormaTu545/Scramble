@@ -1,9 +1,12 @@
 #pragma once
+
 #include <SFML/Graphics.hpp>
+
 #define WINDOW_WIDTH 1000
 #define WINDOW_HEIGHT 500
 #define SHIP_WIDTH 75
 #define SHIP_HEIGHT 50
+
 class Player {
 
 private:
@@ -14,13 +17,12 @@ private:
 	const float ship_speed = 1.0f;
 
 public:
+	Player(float startX, float startY); //Constructor
 	float fireRateTimer = 0;
-	
-	Player(float startX, float startY);
-	
+
 	sf::FloatRect get_position(); //will use for collision detection
 	sf::RectangleShape* get_shape(); //passes copy of shape for drawing
-	sf::RectangleShape* fire_laser(); //like void and then returns for drawing
+	sf::RectangleShape* fire_laser(); //sets up laser & returns ptr for drawing
 	//sf::RectangleShape* drop_bomb();
 
 	void move_up(); //adds ship_speed to y position

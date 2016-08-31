@@ -1,5 +1,5 @@
 #pragma once
-//#include "AttackObject.h"
+
 #include "SFML\Graphics.hpp"
 #include <vector>
 #include <iostream>
@@ -9,13 +9,14 @@
 
 class Laser {
 
-	
 public:
+	Laser(sf::Vector2f spawnPos); //Constructor
+
 	sf::Vector2f position;
-	sf::RectangleShape attack_shape;
-	sf::Texture image;
-	sf::Vector2f moveDirection; //Goes RIGHT or goes straight DOWN
-	Laser(sf::Vector2f spawnPos);
-	sf::RectangleShape* getShape();
-	void move();
+	sf::RectangleShape laser_shape;
+	sf::Texture laser_image;
+	sf::Vector2f moveDirection; //1 in X direction, 0 in Y direction
+	sf::RectangleShape* getShape(); //returns pointer for drawing
+
+	void move(); //Goes right
 };
