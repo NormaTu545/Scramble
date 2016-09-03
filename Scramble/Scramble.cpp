@@ -10,6 +10,7 @@
 
 #define WINDOW_WIDTH 1000
 #define WINDOW_HEIGHT 500
+#define FUEL_BAR_XPOS 635
 
 using namespace std;
 
@@ -23,6 +24,27 @@ int main() {
 	
 	//--[Loading Game Stuff]-----------------------------------------------------------------
 
+	//Heads Up Display set up
+	sf::Text score_text;
+	sf::Text fuel_text;
+
+	//Font is "karmatic_arcade" from dafont.com
+	sf::Font font;
+	font.loadFromFile("kaFont.ttf");
+
+	score_text.setFont(font);
+	score_text.setCharacterSize(35);
+	score_text.setPosition(10.0f, 0.0f);
+	score_text.setColor(sf::Color::White);
+	score_text.setString("SCORE ");
+
+	fuel_text.setFont(font);
+	fuel_text.setCharacterSize(35);
+	fuel_text.setPosition(WINDOW_WIDTH / 2, 0.0f);
+	fuel_text.setColor(sf::Color::White);
+	fuel_text.setString("FUEL");
+
+	//Load & Set Up Background
 	sf::Texture outer_space;
 
 	if (!outer_space.loadFromFile("space.jpg")) {
@@ -123,7 +145,8 @@ int main() {
 		
 		//----------------[DRAWING]-----------------------//
 		window.draw(background);
-
+		window.draw(score_text);
+		window.draw(fuel_text);
 		window.draw(*player.get_shape());
 		
 		//Draw any laser instances in the lasers vector
@@ -135,6 +158,12 @@ int main() {
 		for (int j = 0; j < bombs.size(); j++) {
 			window.draw(*(bombs[j]->getShape()));
 		}
+
+		//----[Drawing the HUD]---------------------------//
+		//Show Lives x3
+		//for (int lives = 0; lives < 4; lives++) {
+		//    draw array of lives 
+		//} 
 		//------------------------------------------------//
 		window.display();
 	}
