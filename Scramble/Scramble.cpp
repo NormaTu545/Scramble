@@ -19,6 +19,7 @@ int main() {
 	vector<Laser*> lasers;
 	vector<Bomb*> bombs;
 	bool game_over = false;
+	float current_fuel = 100;
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Scramble_Game");
 	
@@ -36,13 +37,21 @@ int main() {
 	score_text.setCharacterSize(35);
 	score_text.setPosition(10.0f, 0.0f);
 	score_text.setColor(sf::Color::White);
-	score_text.setString("SCORE ");
+	score_text.setString("SCORE "); //MARK: SCORE TEMP STRING
 
 	fuel_text.setFont(font);
 	fuel_text.setCharacterSize(35);
 	fuel_text.setPosition(WINDOW_WIDTH / 2, 0.0f);
 	fuel_text.setColor(sf::Color::White);
 	fuel_text.setString("FUEL");
+
+	sf::RectangleShape greyBar(sf::Vector2f(360, 40));
+	greyBar.setPosition(FUEL_BAR_XPOS - 5, 5);
+	greyBar.setFillColor(sf::Color::Color(200, 200, 200, 100));
+
+	sf::RectangleShape fuelBar(sf::Vector2f(355, 35));
+	fuelBar.setPosition(FUEL_BAR_XPOS - 3, 7);
+	fuelBar.setFillColor(sf::Color::Color(0, 255, 150, 150));
 
 	//Load & Set Up Background
 	sf::Texture outer_space;
@@ -86,6 +95,9 @@ int main() {
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
 			player.move_right();
 		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::F)) {
+			current_fuel -= 0.5;
+		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
 			//Fires a laser & adds that instance to lasers vector
 			if (player.fireRateTimer >= 5) { //Every 50 frames. 5/0.1 = 50
@@ -117,7 +129,13 @@ int main() {
 
 		if (!game_over) {
 			player.update();
-
+			
+			//Fuel Bar update
+			current_fuel -= 0.0025; //Fuel slowly goes down every frame
+			fuelBar.setScale(current_fuel/100, 1); 
+			if (current_fuel <= 0) 
+				current_fuel = 0; //prevent negative value
+			
 			//Laser update
 			for (int index = 0; index < lasers.size(); index++) {
 				lasers[index]->move();
@@ -147,6 +165,8 @@ int main() {
 		window.draw(background);
 		window.draw(score_text);
 		window.draw(fuel_text);
+		window.draw(greyBar);
+		window.draw(fuelBar);
 		window.draw(*player.get_shape());
 		
 		//Draw any laser instances in the lasers vector
