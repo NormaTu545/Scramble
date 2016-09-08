@@ -11,6 +11,7 @@
 #define WINDOW_WIDTH 1000
 #define WINDOW_HEIGHT 500
 #define FUEL_BAR_XPOS 635
+#define FUEL_LOSS_RATE 0.0025f
 
 using namespace std;
 
@@ -20,12 +21,13 @@ int main() {
 	vector<Bomb*> bombs;
 	bool game_over = false;
 	float current_fuel = 100;
+	int player_lives = 3;
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Scramble_Game");
 	
 	//--[Loading Game Stuff]-----------------------------------------------------------------
 
-	//Heads Up Display set up
+	// [Heads Up Display set up]
 	sf::Text score_text;
 	sf::Text fuel_text;
 
@@ -37,7 +39,7 @@ int main() {
 	score_text.setCharacterSize(35);
 	score_text.setPosition(10.0f, 0.0f);
 	score_text.setColor(sf::Color::White);
-	score_text.setString("SCORE "); //MARK: SCORE TEMP STRING
+	score_text.setString("SCORE "); //TODO: SCORE TEMP STRING
 
 	fuel_text.setFont(font);
 	fuel_text.setCharacterSize(35);
@@ -52,6 +54,22 @@ int main() {
 	sf::RectangleShape fuelBar(sf::Vector2f(355, 35));
 	fuelBar.setPosition(FUEL_BAR_XPOS - 3, 7);
 	fuelBar.setFillColor(sf::Color::Color(0, 255, 150, 150));
+
+	//Lives set up
+	sf::Texture playerIMG;
+
+	if (!playerIMG.loadFromFile("player.png")) {
+		cout << "Couldn't load player.png!" << endl;
+		return EXIT_FAILURE;
+	}
+
+	vector<sf::RectangleShape*> lives;
+
+	for (int total_lives = 0; total_lives < player_lives; total_lives++) {
+		sf::RectangleShape* player_life_img = new sf::RectangleShape(sf::Vector2f(50.0f, 40.0f));
+		player_life_img ->setTexture(&playerIMG);
+		lives.push_back(player_life_img);
+	}
 
 	//Load & Set Up Background
 	sf::Texture outer_space;
@@ -69,6 +87,8 @@ int main() {
 	
 	/* Make a player */
 	Player player(WINDOW_WIDTH / 3, WINDOW_HEIGHT / 2);
+
+	sf::FloatRect player_position = player.get_position();
 
 	//[Actual Game Loop]--------------------------------------------------
 
@@ -96,13 +116,13 @@ int main() {
 			player.move_right();
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::F)) {
-			current_fuel -= 0.5;
+			current_fuel -= 0.5; //for testing
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
 			//Fires a laser & adds that instance to lasers vector
 			if (player.fireRateTimer >= 5) { //Every 50 frames. 5/0.1 = 50
 				sf::FloatRect currPos = player.get_position();
-				sf::Vector2f ship_right_side(currPos.left + SHIP_WIDTH, currPos.top + SHIP_HEIGHT/2);
+				sf::Vector2f ship_right_side(currPos.left + SHIP_WIDTH, currPos.top + SHIP_HEIGHT / 2);
 
 				Laser* pew = new Laser(ship_right_side); //Spawn laser at right of image
 				//Add to list of lasers
@@ -114,28 +134,72 @@ int main() {
 			//Drops a bomb & adds that instance to bombs vector 
 			if (player.fireRateTimer >= 5) { //Every 50 frames. 5/0.1 = 50
 				sf::FloatRect currPos = player.get_position();
-				sf::Vector2f ship_bottom_side(currPos.left + SHIP_WIDTH/2, currPos.top + SHIP_HEIGHT);
+				sf::Vector2f ship_bottom_side(currPos.left + SHIP_WIDTH / 2, currPos.top + SHIP_HEIGHT);
 
 				Bomb* boom = new Bomb(ship_bottom_side); //Spawn laser at bottom of image
-			    //Adds this instance to list of bombs
+				//Adds this instance to list of bombs
 				bombs.push_back(boom);
 				player.fireRateTimer = 0; //resets timer
 			}
 		}
 
-		//~~~~~~~~~~~~~~~~~~~~~~~[UPDATE]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-		
+		//~~~~~~~~~~~~~~~~~~~~~[WINDOW UPDATE]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
 		window.clear();
 
+		player.update();
+		window.draw(background);
+
+		//Lives indicator update
+		for (int l = 0; l < lives.size(); l++) {
+			lives[l]->setPosition(sf::Vector2f(10 + l * 55.0f, 45.0f));
+			window.draw(*lives[l]);
+		}
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+		//                    GAME NOT OVER
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 		if (!game_over) {
-			player.update();
-			
+			//Save point where player died for respawning
+			sf::FloatRect death_position;
+
+			if (!player.justDied) {
+			death_position	= player.get_position();
+			}
 			//Fuel Bar update
-			current_fuel -= 0.0025; //Fuel slowly goes down every frame
-			fuelBar.setScale(current_fuel/100, 1); 
-			if (current_fuel <= 0) 
+			current_fuel -= FUEL_LOSS_RATE; //Slowly goes down every frame
+			fuelBar.setScale(current_fuel / 100, 1); //Scales green bar
+			if (current_fuel <= 0) {
 				current_fuel = 0; //prevent negative value
-			
+
+				if (!player.justDied) {
+					player.justDied = true;
+					
+					player_lives--; //lost a life
+					sf::RectangleShape* ptr = lives[0]; //pointer to 1st element
+					delete(ptr); //deletes it & scooches the rest over
+					lives.erase(lives.begin()); //deletes an actual life
+					
+				}
+
+				if (player.justDied) {
+					player.move_down();
+				}
+				//Check if we respawn or not
+				if (player.get_position().top >= WINDOW_HEIGHT - 60) {
+					if (player_lives > 0) {
+						player.setPosition(WINDOW_WIDTH / 3, WINDOW_HEIGHT / 2);
+						current_fuel = 100;
+						player.justDied = false;
+
+					}
+					else {
+						game_over = true;
+					}
+				}
+			}
+
 			//Laser update
 			for (int index = 0; index < lasers.size(); index++) {
 				lasers[index]->move();
@@ -160,9 +224,18 @@ int main() {
 				}
 			}
 		}
+		else {
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+		//                   GAME OVER 
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+			if (player_position.top < WINDOW_HEIGHT) {
+				player.move_down(); //Force player to sink
+			}
+
+		}
 		
 		//----------------[DRAWING]-----------------------//
-		window.draw(background);
+	
 		window.draw(score_text);
 		window.draw(fuel_text);
 		window.draw(greyBar);

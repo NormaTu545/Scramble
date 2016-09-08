@@ -11,7 +11,7 @@ using namespace std;
 Player::Player(float startX, float startY) {
 	position.x = startX;
 	position.y = startY;
-
+	justDied = false;
 	//--Set up player IMG loading--//
 	if (!player_image.loadFromFile("player.png")) {
 		cout << "Couldn't load player.png!" << endl;
@@ -64,6 +64,15 @@ void Player::move_left() {
 
 void Player::move_right() {
 	position.x += ship_speed;
+}
+
+void Player::setPosition(float x, float y) {
+	position.x = x;
+	position.y = y;
+}
+
+void Player::die() {
+	player_shape.rotate(35);
 }
 
 void Player::update() {
