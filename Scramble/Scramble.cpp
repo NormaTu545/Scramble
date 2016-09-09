@@ -20,8 +20,9 @@ int main() {
 	vector<Laser*> lasers;
 	vector<Bomb*> bombs;
 	bool game_over = false;
-	float current_fuel = 100;
-	int player_lives = 3;
+	float current_fuel = 100; //Start 100% Full
+	int player_lives = 3; //Start with 3 lives
+	sf::Vector2f death_position;  //Save point where player died
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Scramble_Game");
 	
@@ -39,7 +40,7 @@ int main() {
 	score_text.setCharacterSize(35);
 	score_text.setPosition(10.0f, 0.0f);
 	score_text.setColor(sf::Color::White);
-	score_text.setString("SCORE "); //TODO: SCORE TEMP STRING
+	score_text.setString("SCORE "); //TODO: FIX SCORE PLACEHOLDER STRING
 
 	fuel_text.setFont(font);
 	fuel_text.setCharacterSize(35);
@@ -55,7 +56,7 @@ int main() {
 	fuelBar.setPosition(FUEL_BAR_XPOS - 3, 7);
 	fuelBar.setFillColor(sf::Color::Color(0, 255, 150, 150));
 
-	//Lives set up
+	// [Lives set up]
 	sf::Texture playerIMG;
 
 	if (!playerIMG.loadFromFile("player.png")) {
@@ -88,7 +89,7 @@ int main() {
 	/* Make a player */
 	Player player(WINDOW_WIDTH / 3, WINDOW_HEIGHT / 2);
 
-	sf::FloatRect player_position = player.get_position();
+	sf::Vector2f player_position = player.get_position();
 
 	//[Actual Game Loop]--------------------------------------------------
 
@@ -121,8 +122,8 @@ int main() {
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) {
 			//Fires a laser & adds that instance to lasers vector
 			if (player.fireRateTimer >= 5) { //Every 50 frames. 5/0.1 = 50
-				sf::FloatRect currPos = player.get_position();
-				sf::Vector2f ship_right_side(currPos.left + SHIP_WIDTH, currPos.top + SHIP_HEIGHT / 2);
+				sf::Vector2f ship_right_side(player.get_position().x + SHIP_WIDTH,
+										     player.get_position().y + SHIP_HEIGHT / 2);
 
 				Laser* pew = new Laser(ship_right_side); //Spawn laser at right of image
 				//Add to list of lasers
@@ -133,8 +134,9 @@ int main() {
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
 			//Drops a bomb & adds that instance to bombs vector 
 			if (player.fireRateTimer >= 5) { //Every 50 frames. 5/0.1 = 50
-				sf::FloatRect currPos = player.get_position();
-				sf::Vector2f ship_bottom_side(currPos.left + SHIP_WIDTH / 2, currPos.top + SHIP_HEIGHT);
+				//sf::FloatRect currPos = player.get_position();
+				sf::Vector2f ship_bottom_side(player.get_position().x + SHIP_WIDTH / 2, 
+											  player.get_position().y + SHIP_HEIGHT);
 
 				Bomb* boom = new Bomb(ship_bottom_side); //Spawn laser at bottom of image
 				//Adds this instance to list of bombs
@@ -161,12 +163,7 @@ int main() {
 		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 		if (!game_over) {
-			//Save point where player died for respawning
-			sf::FloatRect death_position;
-
-			if (!player.justDied) {
-			death_position	= player.get_position();
-			}
+			
 			//Fuel Bar update
 			current_fuel -= FUEL_LOSS_RATE; //Slowly goes down every frame
 			fuelBar.setScale(current_fuel / 100, 1); //Scales green bar
@@ -175,7 +172,8 @@ int main() {
 
 				if (!player.justDied) {
 					player.justDied = true;
-					
+					death_position = player.get_position();
+
 					player_lives--; //lost a life
 					sf::RectangleShape* ptr = lives[0]; //pointer to 1st element
 					delete(ptr); //deletes it & scooches the rest over
@@ -186,10 +184,11 @@ int main() {
 				if (player.justDied) {
 					player.move_down();
 				}
-				//Check if we respawn or not
-				if (player.get_position().top >= WINDOW_HEIGHT - 60) {
+
+				//Check if player respawns or not
+				if (player.get_position().y >= WINDOW_HEIGHT - 60) {
 					if (player_lives > 0) {
-						player.setPosition(WINDOW_WIDTH / 3, WINDOW_HEIGHT / 2);
+						player.setPosition(death_position);
 						current_fuel = 100;
 						player.justDied = false;
 
@@ -228,7 +227,7 @@ int main() {
 		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
 		//                   GAME OVER 
 		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			if (player_position.top < WINDOW_HEIGHT) {
+			if (player_position.y < WINDOW_HEIGHT) {
 				player.move_down(); //Force player to sink
 			}
 
