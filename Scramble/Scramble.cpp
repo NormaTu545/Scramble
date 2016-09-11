@@ -161,8 +161,7 @@ int main() {
 		*********************************************************************
 		*/
 
-		
-		//When player comes within view of rocket, rocket will go flying
+		/* HANDLE ROCKET FLYING UP WHEN PLAYER IS W/IN VIEW OF ROCKET */
 
 		if (rocket.get_position().left - player.get_position().x <= TRIGGER_DISTANCE) {
 			rocket_flying = true;
@@ -174,6 +173,28 @@ int main() {
 			if (rocket.get_position().top <= 0) {
 				rocket.go_away();
 			}
+		}
+
+		/* HANDLE PLAYER GETTING HIT BY ANY OF THE GAME OBJECTS */
+		/* (Game object is removed when player collides with it) */
+		bool player_hit_fuel_tank = player.get_shape() -> getGlobalBounds().intersects(fuelTank.get_position());
+		bool player_hit_saucer = player.get_shape() -> getGlobalBounds().intersects(saucer.get_position());
+		bool player_hit_rocket = player.get_shape() -> getGlobalBounds().intersects(rocket.get_position());
+
+		if (player_hit_fuel_tank) { 
+			current_fuel = 0; //make player lose a life & empty the fuel bar
+			fuelTank.go_away();
+			fuel_tank_destroyed = true;
+		}
+		if (player_hit_saucer) {
+			current_fuel = 0;
+			saucer.go_away();
+			saucer_destroyed = true;
+		}
+		if (player_hit_rocket) {
+			current_fuel = 0;
+			rocket.go_away();
+			rocket_destroyed = true;
 		}
 
 		/* HANDLE LASER DESTROYING GAME OBJECTS */
