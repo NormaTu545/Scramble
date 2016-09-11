@@ -4,6 +4,9 @@
 #include "Player.h"
 #include "Laser.h"
 #include "Bomb.h"
+#include "FuelTank.h"
+#include "Saucer.h"
+#include "Rocket.h"
 #include <iostream>
 #include <vector>
 #include <SFML/Graphics.hpp>
@@ -88,13 +91,16 @@ int main() {
 	
 	/* Make a player */
 	Player player(WINDOW_WIDTH / 3, WINDOW_HEIGHT / 2);
-
 	sf::Vector2f player_position = player.get_position();
+
+	/* Make a TEST Fuel Tank, Saucer, & Rocket */
+	FuelTank fuelTank(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4);
+	Saucer saucer(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4 + 100);
+	Rocket rocket(WINDOW_WIDTH / 2 + 200, WINDOW_HEIGHT / 4 + 150);
 
 	//[Actual Game Loop]--------------------------------------------------
 
-	while (window.isOpen())
-	{
+	while (window.isOpen()) {
 		sf::Event event;
 		while (window.pollEvent(event))
 		{
@@ -145,9 +151,19 @@ int main() {
 			}
 		}
 
+		/*
+		*********************************************************************
+		[Event Handling]
+		*********************************************************************
+		*/
+		
+
+
 		//~~~~~~~~~~~~~~~~~~~~~[WINDOW UPDATE]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 		window.clear();
+
+		//--------DRAW REGARDLESS OF GAME OVER OR NOT OVER-------------
 
 		player.update();
 		window.draw(background);
@@ -182,11 +198,12 @@ int main() {
 				}
 
 				if (player.justDied) {
-					player.move_down();
+					player.move_down(); //sinks the spaceship
 				}
 
-				//Check if player respawns or not
+				//When spaceship sinks all the way to the bottom
 				if (player.get_position().y >= WINDOW_HEIGHT - 60) {
+					//Check if player still has lives for respawning
 					if (player_lives > 0) {
 						player.setPosition(death_position);
 						current_fuel = 100;
@@ -194,6 +211,7 @@ int main() {
 
 					}
 					else {
+						//Player lost all lives
 						game_over = true;
 					}
 				}
@@ -239,6 +257,11 @@ int main() {
 		window.draw(fuel_text);
 		window.draw(greyBar);
 		window.draw(fuelBar);
+		
+		window.draw(*fuelTank.get_shape());
+		window.draw(*saucer.get_shape());
+		window.draw(*rocket.get_shape());
+
 		window.draw(*player.get_shape());
 		
 		//Draw any laser instances in the lasers vector
@@ -251,14 +274,7 @@ int main() {
 			window.draw(*(bombs[j]->getShape()));
 		}
 
-		//----[Drawing the HUD]---------------------------//
-		//Show Lives x3
-		//for (int lives = 0; lives < 4; lives++) {
-		//    draw array of lives 
-		//} 
-		//------------------------------------------------//
 		window.display();
 	}
-
 	return 0;
 }
