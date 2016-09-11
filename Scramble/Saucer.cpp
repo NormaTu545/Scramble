@@ -16,7 +16,16 @@ Saucer::Saucer(float startX, float startY) {
 	saucer_shape.setPosition(*position);
 }
 
+sf::FloatRect Saucer::get_position() {
+	return saucer_shape.getGlobalBounds();
+}
+
 sf::RectangleShape* Saucer::get_shape() {
 	sf::RectangleShape* pointer = &saucer_shape;
 	return pointer;
+}
+
+void Saucer::go_away() {
+	position->y = -10000; //instantly goes way the hell offscreen
+	saucer_shape.setPosition(*position); //Actually update position
 }

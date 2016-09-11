@@ -5,8 +5,10 @@
 
 #define ROCKET_HEIGHT 70
 #define ROCKET_WIDTH 50
-#define SCORE_REWARD 50
-#define FLYING_REWARD 100
+#define ROCKET_SPEED 0.5f
+#define ROCKET_SCORE_REWARD 50
+#define FLYING_ROCKET_SCORE_REWARD 100
+#define TRIGGER_DISTANCE 200
 
 using namespace std;
 
@@ -15,10 +17,16 @@ class Rocket {
 private:
 	sf::Vector2f* position;
 	sf::Texture rocket_image;
+	sf::Texture flying_image;
 	sf::RectangleShape rocket_shape;
 
 public:
-	Rocket(float startX, float startY); //Constructor
+	sf::Vector2f moveDirection; //0 in X direction, 1 in Y direction
 
+	Rocket(float startX, float startY); //Constructor
+	sf::FloatRect get_position(); //for collision detection
 	sf::RectangleShape* get_shape(); //passes copy of shape for drawing
+
+	void go_away(); //Teleports saucer offscreen 
+	void fly_up(); //Sends rocket flying upwards in attack mode
 };
