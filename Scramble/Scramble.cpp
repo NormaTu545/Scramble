@@ -25,8 +25,9 @@ int main() {
 	vector<Bomb*> bombs;
 	bool game_over = false;
 	bool fuel_tank_destroyed = false;
-	bool rocket_destroyed = false;
 	bool saucer_destroyed = false;
+	bool rocket_destroyed = false;
+	bool rocket_flying = false;
 	float current_fuel = 100; //Start 100% Full
 	int player_lives = 3; //Start with 3 lives
 	int score = 0;
@@ -160,13 +161,16 @@ int main() {
 		*********************************************************************
 		*/
 
-		bool rocket_flying = false;
+		
 		//When player comes within view of rocket, rocket will go flying
 
 		if (rocket.get_position().left - player.get_position().x <= TRIGGER_DISTANCE) {
 			rocket_flying = true;
-			rocket.fly_up();
+		}
 
+		if (rocket_flying) {
+			rocket.fly_up();
+		
 			if (rocket.get_position().top <= 0) {
 				rocket.go_away();
 			}
@@ -219,6 +223,7 @@ int main() {
 		for (int j = 0; j < bombs.size(); j++) {
 			bool hit_fuel_tank = (*bombs[j]).bomb_shape.getGlobalBounds().intersects(fuelTank.get_position());
 			bool hit_saucer = (*bombs[j]).bomb_shape.getGlobalBounds().intersects(saucer.get_position());
+			bool hit_rocket = (*bombs[j]).bomb_shape.getGlobalBounds().intersects(rocket.get_position());
 
 			if (hit_fuel_tank) {
 				current_fuel += FUEL_AMOUNT;
@@ -238,8 +243,22 @@ int main() {
 				bombs.erase(bombs.begin() + j); //deletes null ptr
 				saucer_destroyed = true;
 			}
-		}
 
+			if (hit_rocket) {
+				if (!rocket_flying) {
+					score += ROCKET_SCORE_REWARD;
+				}
+				else {
+					score += FLYING_ROCKET_SCORE_REWARD;
+				}
+
+				rocket.go_away();
+
+				delete(bombs[j]); //laser instance is now null ptr
+				bombs.erase(bombs.begin() + j); //deletes null ptr
+				rocket_destroyed = true;
+			}
+		}
 
 		//~~~~~~~~~~~~~~~~~~~~~[WINDOW UPDATE]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
