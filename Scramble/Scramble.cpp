@@ -7,6 +7,7 @@
 #include "FuelTank.h"
 #include "Saucer.h"
 #include "Rocket.h"
+#include <sstream>
 #include <iostream>
 #include <vector>
 #include <SFML/Graphics.hpp>
@@ -23,8 +24,12 @@ int main() {
 	vector<Laser*> lasers;
 	vector<Bomb*> bombs;
 	bool game_over = false;
+	bool fuel_tank_destroyed = false;
+	bool rocket_destroyed = false;
+	bool saucer_destoryed = false;
 	float current_fuel = 100; //Start 100% Full
 	int player_lives = 3; //Start with 3 lives
+	int score = 0;
 	sf::Vector2f death_position;  //Save point where player died
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Scramble_Game");
@@ -43,7 +48,6 @@ int main() {
 	score_text.setCharacterSize(35);
 	score_text.setPosition(10.0f, 0.0f);
 	score_text.setColor(sf::Color::White);
-	score_text.setString("SCORE "); //TODO: FIX SCORE PLACEHOLDER STRING
 
 	fuel_text.setFont(font);
 	fuel_text.setCharacterSize(35);
@@ -139,7 +143,7 @@ int main() {
 		}
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
 			//Drops a bomb & adds that instance to bombs vector 
-			if (player.fireRateTimer >= 5) { //Every 50 frames. 5/0.1 = 50
+			if (player.fireRateTimer >= 10) { //Every 100 frames. 10/0.1 = 100
 				//sf::FloatRect currPos = player.get_position();
 				sf::Vector2f ship_bottom_side(player.get_position().x + SHIP_WIDTH / 2, 
 											  player.get_position().y + SHIP_HEIGHT);
@@ -157,6 +161,35 @@ int main() {
 		*********************************************************************
 		*/
 		
+		/* HANDLE LASER DESTROYING FUEL TANK */
+
+		for (int i = 0; i < lasers.size(); i++) {
+			bool hit_fuel_tank = (*lasers[i]).laser_shape.getGlobalBounds().intersects(fuelTank.get_position());
+			if (hit_fuel_tank) {
+				current_fuel += FUEL_AMOUNT;
+				score += FUEL_SCORE_REWARD;
+				fuelTank.go_away();
+
+				delete(lasers[i]); //laser instance is now null ptr
+				lasers.erase(lasers.begin() + i); //deletes null ptr
+				fuel_tank_destroyed = true;
+			}
+		}
+
+		/* HANDLE BOMB DESTROYING FUEL TANK */
+
+		for (int j = 0; j < bombs.size(); j++) {
+			bool hit_fuel_tank = (*bombs[j]).bomb_shape.getGlobalBounds().intersects(fuelTank.get_position());
+			if (hit_fuel_tank) {
+				current_fuel += FUEL_AMOUNT;
+				score += FUEL_SCORE_REWARD;
+				fuelTank.go_away();
+
+				delete(bombs[j]); //bomb instance is now null ptr
+				bombs.erase(bombs.begin() + j); //deletes null ptr
+				fuel_tank_destroyed = true;
+			}
+		}
 
 
 		//~~~~~~~~~~~~~~~~~~~~~[WINDOW UPDATE]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -167,6 +200,11 @@ int main() {
 
 		player.update();
 		window.draw(background);
+
+		//Score update
+		stringstream score_stream;
+		score_stream << "SCORE  " << score;
+		score_text.setString(score_stream.str());
 
 		//Lives indicator update
 		for (int l = 0; l < lives.size(); l++) {
@@ -258,7 +296,9 @@ int main() {
 		window.draw(greyBar);
 		window.draw(fuelBar);
 		
-		window.draw(*fuelTank.get_shape());
+		if (!fuel_tank_destroyed) {
+			window.draw(*fuelTank.get_shape());
+		}
 		window.draw(*saucer.get_shape());
 		window.draw(*rocket.get_shape());
 

@@ -5,7 +5,7 @@
 
 #define FUEL_TANK_HEIGHT 70
 #define FUEL_TANK_WIDTH 45
-#define SCORE_REWARD 150
+#define FUEL_SCORE_REWARD 150
 #define FUEL_AMOUNT 25
 
 using namespace std;
@@ -19,6 +19,9 @@ private:
 
 public:
 	FuelTank(float startX, float startY); //Constructor
-
+	sf::FloatRect get_position(); //will use for collision detection
 	sf::RectangleShape* get_shape(); //passes copy of shape for drawing
+
+	void go_away(); //Teleports fuel tank offscreen 
+					//My lazy solution to deleting this instance
 };

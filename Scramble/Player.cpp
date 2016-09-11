@@ -25,7 +25,6 @@ Player::Player(float startX, float startY) {
 }
 
 sf::Vector2f Player::get_position() {
-	//sf::Vector2f newVect(player_shape.);
 	return *(position);
 }
 

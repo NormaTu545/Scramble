@@ -17,7 +17,16 @@ FuelTank::FuelTank(float startX, float startY) {
 	fuel_shape.setPosition(*position);
 }
 
+sf::FloatRect FuelTank::get_position() {
+	return fuel_shape.getGlobalBounds();
+}
+
 sf::RectangleShape* FuelTank::get_shape() {
 	sf::RectangleShape* pointer = &fuel_shape;
 	return pointer;
+}
+
+void FuelTank::go_away() {
+	position->y = -10000; //instantly goes way the hell offscreen
+	fuel_shape.setPosition(*position); //Actually update position
 }
