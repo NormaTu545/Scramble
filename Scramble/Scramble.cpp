@@ -15,12 +15,12 @@
 #define WINDOW_WIDTH 1000
 #define WINDOW_HEIGHT 500
 #define FUEL_BAR_XPOS 635
-#define FUEL_LOSS_RATE 0.0025f
-
+#define FUEL_LOSS_RATE 0.005f
+#define MAX_LIVES 3
 using namespace std;
 
 int main() {
-	
+	/* Declaring global variables */
 	vector<Laser*> lasers;
 	vector<Bomb*> bombs;
 	bool game_over = false;
@@ -29,7 +29,7 @@ int main() {
 	bool rocket_destroyed = false;
 	bool rocket_flying = false;
 	float current_fuel = 100; //Start 100% Full
-	int player_lives = 3; //Start with 3 lives
+	int player_lives = MAX_LIVES; //Start with 3 lives
 	int score = 0;
 	sf::Vector2f death_position;  //Save point where player died
 
@@ -40,6 +40,7 @@ int main() {
 	// [Heads Up Display set up]
 	sf::Text score_text;
 	sf::Text fuel_text;
+	sf::Text end_text;
 
 	//Font is "karmatic_arcade" from dafont.com
 	sf::Font font;
@@ -55,6 +56,12 @@ int main() {
 	fuel_text.setPosition(WINDOW_WIDTH / 2, 0.0f);
 	fuel_text.setColor(sf::Color::White);
 	fuel_text.setString("FUEL");
+
+	end_text.setFont(font);
+	end_text.setCharacterSize(30);
+	end_text.setPosition(WINDOW_WIDTH / 10, WINDOW_HEIGHT / 3);
+	end_text.setColor(sf::Color::White);
+	end_text.setString("GAME OVER!  PRESS -SPACE- TO PLAY AGAIN");
 
 	sf::RectangleShape greyBar(sf::Vector2f(360, 40));
 	greyBar.setPosition(FUEL_BAR_XPOS - 5, 5);
@@ -74,12 +81,20 @@ int main() {
 
 	vector<sf::RectangleShape*> lives;
 
-	for (int total_lives = 0; total_lives < player_lives; total_lives++) {
+	for (int total_lives = 0; total_lives < MAX_LIVES; total_lives++) {
 		sf::RectangleShape* player_life_img = new sf::RectangleShape(sf::Vector2f(50.0f, 40.0f));
-		player_life_img ->setTexture(&playerIMG);
+		player_life_img->setTexture(&playerIMG);
 		lives.push_back(player_life_img);
 	}
 
+	/* Make a player */
+	Player player(WINDOW_WIDTH / 8, WINDOW_HEIGHT / 2);
+
+	/* Make a TEST Fuel Tank, Saucer, & Rocket */
+	FuelTank fuelTank(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4);
+	Saucer saucer(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4 + 100);
+	Rocket rocket(WINDOW_WIDTH / 2 + 200, WINDOW_HEIGHT - 100);
+	
 	//Load & Set Up Background
 	sf::Texture outer_space;
 
@@ -93,21 +108,12 @@ int main() {
 	
 	/* Scale background manually to fit the window */
 	background.setScale(1.6f, 1.5f);
-	
-	/* Make a player */
-	Player player(WINDOW_WIDTH / 3, WINDOW_HEIGHT / 2);
-
-	/* Make a TEST Fuel Tank, Saucer, & Rocket */
-	FuelTank fuelTank(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4);
-	Saucer saucer(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4 + 100);
-	Rocket rocket(WINDOW_WIDTH / 2 + 200, WINDOW_HEIGHT - 100);
 
 	//[Actual Game Loop]--------------------------------------------------
 
 	while (window.isOpen()) {
 		sf::Event event;
-		while (window.pollEvent(event))
-		{
+		while (window.pollEvent(event)) {
 			if (event.type == sf::Event::Closed)
 				window.close();
 		}
@@ -126,6 +132,34 @@ int main() {
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
 			player.move_right();
 		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+			/* Pressing SPACE restarts the game completely */
+			if (game_over) {
+				game_over = false;
+				
+				// Return player position & starting values to where they started
+				player.setPosition(sf::Vector2f(WINDOW_WIDTH / 8, WINDOW_HEIGHT / 2));
+				score = 0;
+				current_fuel = 100;
+				player_lives = MAX_LIVES;
+
+				//Re-position game objects
+				fuel_tank_destroyed = false;
+				saucer_destroyed = false;
+				rocket_destroyed = false;
+				
+				fuelTank.come_back(sf::Vector2f(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 3));
+				saucer.come_back(sf::Vector2f(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4));
+				rocket.come_back(sf::Vector2f(WINDOW_WIDTH / 2 + 300, WINDOW_HEIGHT / 3));
+				
+				//Restock on lives
+				for (int total_lives = 0; total_lives < MAX_LIVES; total_lives++) {
+					sf::RectangleShape* player_life_img = new sf::RectangleShape(sf::Vector2f(50.0f, 40.0f));
+					player_life_img->setTexture(&playerIMG);
+					lives.push_back(player_life_img);
+				}
+			}
+		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::F)) {
 			current_fuel -= 0.5; //for testing
 		}
@@ -133,7 +167,7 @@ int main() {
 			//Fires a laser & adds that instance to lasers vector
 			if (player.fireRateTimer >= 5) { //Every 50 frames. 5/0.1 = 50
 				sf::Vector2f ship_right_side(player.get_position().x + SHIP_WIDTH,
-										     player.get_position().y + SHIP_HEIGHT / 2);
+					player.get_position().y + SHIP_HEIGHT / 2);
 
 				Laser* pew = new Laser(ship_right_side); //Spawn laser at right of image
 				//Add to list of lasers
@@ -145,8 +179,8 @@ int main() {
 			//Drops a bomb & adds that instance to bombs vector 
 			if (player.fireRateTimer >= 10) { //Every 100 frames. 10/0.1 = 100
 				//sf::FloatRect currPos = player.get_position();
-				sf::Vector2f ship_bottom_side(player.get_position().x + SHIP_WIDTH / 2, 
-											  player.get_position().y + SHIP_HEIGHT);
+				sf::Vector2f ship_bottom_side(player.get_position().x + SHIP_WIDTH / 2,
+					player.get_position().y + SHIP_HEIGHT);
 
 				Bomb* boom = new Bomb(ship_bottom_side); //Spawn laser at bottom of image
 				//Adds this instance to list of bombs
@@ -169,7 +203,7 @@ int main() {
 
 		if (rocket_flying) {
 			rocket.fly_up();
-		
+
 			if (rocket.get_position().top <= 0) {
 				rocket.go_away();
 			}
@@ -177,11 +211,11 @@ int main() {
 
 		/* HANDLE PLAYER GETTING HIT BY ANY OF THE GAME OBJECTS */
 		/* (Game object is removed when player collides with it) */
-		bool player_hit_fuel_tank = player.get_shape() -> getGlobalBounds().intersects(fuelTank.get_position());
-		bool player_hit_saucer = player.get_shape() -> getGlobalBounds().intersects(saucer.get_position());
-		bool player_hit_rocket = player.get_shape() -> getGlobalBounds().intersects(rocket.get_position());
+		bool player_hit_fuel_tank = player.get_shape()->getGlobalBounds().intersects(fuelTank.get_position());
+		bool player_hit_saucer = player.get_shape()->getGlobalBounds().intersects(saucer.get_position());
+		bool player_hit_rocket = player.get_shape()->getGlobalBounds().intersects(rocket.get_position());
 
-		if (player_hit_fuel_tank) { 
+		if (player_hit_fuel_tank) {
 			current_fuel = 0; //make player lose a life & empty the fuel bar
 			fuelTank.go_away();
 			fuel_tank_destroyed = true;
@@ -302,11 +336,20 @@ int main() {
 		}
 
 		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
+		//                   GAME OVER 
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+		if (game_over) {
+			if (player.get_position().y < WINDOW_HEIGHT) {
+				player.move_down(); //Force player to sink
+			}
+		}
+
+		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
 		//                    GAME NOT OVER
 		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-		if (!game_over) {
-			
+		else {
+
 			//Fuel Bar update
 			current_fuel -= FUEL_LOSS_RATE; //Slowly goes down every frame
 			fuelBar.setScale(current_fuel / 100, 1); //Scales green bar
@@ -325,7 +368,7 @@ int main() {
 					sf::RectangleShape* ptr = lives[0]; //pointer to 1st element
 					delete(ptr); //deletes it & scooches the rest over
 					lives.erase(lives.begin()); //deletes an actual life
-					
+
 				}
 
 				if (player.justDied) {
@@ -335,10 +378,10 @@ int main() {
 				//When spaceship sinks all the way to the bottom
 				if (player.get_position().y >= WINDOW_HEIGHT - 60) {
 					//Check if player still has lives for respawning
+					player.justDied = false;
 					if (player_lives > 0) {
 						player.setPosition(death_position);
 						current_fuel = 100;
-						player.justDied = false;
 
 					}
 					else {
@@ -371,47 +414,40 @@ int main() {
 					bombs.erase(instance);
 				}
 			}
-		}
-		else {
-		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~	
-		//                   GAME OVER 
-		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			if (player.get_position().y < WINDOW_HEIGHT) {
-				player.move_down(); //Force player to sink
+			//		} //End of ORIGINAL game not over check
+
+			//----------------[DRAWING]-----------------------//
+
+			window.draw(score_text);
+			window.draw(fuel_text);
+			window.draw(greyBar);
+			window.draw(fuelBar);
+
+			if (game_over)
+				window.draw(end_text);
+
+			if (!fuel_tank_destroyed) 
+				window.draw(*fuelTank.get_shape());
+			
+			if (!saucer_destroyed) 
+				window.draw(*saucer.get_shape());
+			
+			if (!rocket_destroyed) 
+				window.draw(*rocket.get_shape());
+			
+			window.draw(*player.get_shape());
+
+			//Draw any laser instances in the lasers vector
+			for (int i = 0; i < lasers.size(); i++) {
+				window.draw(*(lasers[i]->getShape()));
 			}
 
+			//Draw any bomb instances in the bombs vector
+			for (int j = 0; j < bombs.size(); j++) {
+				window.draw(*(bombs[j]->getShape()));
+			}
+			window.display();
 		}
-		
-		//----------------[DRAWING]-----------------------//
-	
-		window.draw(score_text);
-		window.draw(fuel_text);
-		window.draw(greyBar);
-		window.draw(fuelBar);
-		
-		if (!fuel_tank_destroyed) {
-			window.draw(*fuelTank.get_shape());
-		}
-		if (!saucer_destroyed) {
-			window.draw(*saucer.get_shape());
-		}
-		if (!rocket_destroyed) {
-			window.draw(*rocket.get_shape());
-		}
-
-		window.draw(*player.get_shape());
-		
-		//Draw any laser instances in the lasers vector
-		for (int i = 0; i < lasers.size(); i++) {
-			window.draw(*(lasers[i]->getShape()));
-		}
-
-		//Draw any bomb instances in the bombs vector
-		for (int j = 0; j < bombs.size(); j++) {
-			window.draw(*(bombs[j]->getShape()));
-		}
-
-		window.display();
-	}
+	} //game not over closing bracket
 	return 0;
 }

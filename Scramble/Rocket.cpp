@@ -36,6 +36,12 @@ void Rocket::go_away() {
 	rocket_shape.setPosition(*position); //Actually update position
 }
 
+void Rocket::come_back(sf::Vector2f start_position) {
+	//The rectangleShape is repositioned back onscreen
+	*position = start_position;
+	rocket_shape.setPosition(*position);
+}
+
 void Rocket::fly_up() {
 	//Switch image texture to flying rocket & offset height for the flames
 	rocket_shape.setTexture(&flying_image);

@@ -24,4 +24,6 @@ public:
 
 	void go_away(); //Teleports fuel tank offscreen 
 					//My lazy solution to deleting this instance
+	void come_back(sf::Vector2f start_position); //Teleports back onscreen for game restart
+
 };

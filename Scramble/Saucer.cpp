@@ -29,3 +29,9 @@ void Saucer::go_away() {
 	position->y = -10000; //instantly goes way the hell offscreen
 	saucer_shape.setPosition(*position); //Actually update position
 }
+
+void Saucer::come_back(sf::Vector2f start_position) {
+	//The rectangleShape is repositioned back onscreen
+	*position = start_position;
+	saucer_shape.setPosition(*position);
+}

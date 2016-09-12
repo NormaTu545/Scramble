@@ -30,3 +30,9 @@ void FuelTank::go_away() {
 	position->y = -10000; //instantly goes way the hell offscreen
 	fuel_shape.setPosition(*position); //Actually update position
 }
+
+void FuelTank::come_back(sf::Vector2f start_position) {
+	//The rectangleShape is repositioned back onscreen
+	*position = start_position;
+	fuel_shape.setPosition(*position);
+}
