@@ -7,6 +7,7 @@
 #include "FuelTank.h"
 #include "Saucer.h"
 #include "Rocket.h"
+#include "Terrain.h"
 #include <sstream>
 #include <iostream>
 #include <vector>
@@ -94,7 +95,13 @@ int main() {
 	FuelTank fuelTank(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4);
 	Saucer saucer(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4 + 100);
 	Rocket rocket(WINDOW_WIDTH / 2 + 200, WINDOW_HEIGHT - 100);
-	
+
+	/* Make the horizontally scrolling terrain */
+	Terrain* ground = new Terrain();
+
+	vector<sf::RectangleShape*> terrainBlocks;
+	terrainBlocks = ground->terrain;
+
 	//Load & Set Up Background
 	sf::Texture outer_space;
 
@@ -349,6 +356,8 @@ int main() {
 		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 		else {
+			//Scrolling Terrain update
+			ground->move();
 
 			//Fuel Bar update
 			current_fuel -= FUEL_LOSS_RATE; //Slowly goes down every frame
@@ -446,6 +455,12 @@ int main() {
 			for (int j = 0; j < bombs.size(); j++) {
 				window.draw(*(bombs[j]->getShape()));
 			}
+
+			//Draw the blocks of the horizontally scrolling terrain
+			for (int k = 0; k < terrainBlocks.size(); k++) {
+				window.draw(*terrainBlocks[k]);
+			}
+
 			window.display();
 		}
 	} //game not over closing bracket
