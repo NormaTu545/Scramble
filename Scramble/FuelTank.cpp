@@ -36,3 +36,8 @@ void FuelTank::come_back(sf::Vector2f start_position) {
 	*position = start_position;
 	fuel_shape.setPosition(*position);
 }
+
+void FuelTank::move() {
+	sf::Vector2f dir(-1 * MOVE_SPEED, 0);
+	fuel_shape.move(dir);
+}

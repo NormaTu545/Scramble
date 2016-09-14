@@ -52,3 +52,8 @@ void Rocket::fly_up() {
 	//Updates position.x
 	position->y -= (moveDirection.y * ROCKET_SPEED); 
 }
+
+void Rocket::move() {
+	sf::Vector2f dir(-1 * MOVE_SPEED, 0);
+	rocket_shape.move(dir);
+}

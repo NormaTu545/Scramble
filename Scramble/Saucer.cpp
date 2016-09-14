@@ -35,3 +35,8 @@ void Saucer::come_back(sf::Vector2f start_position) {
 	*position = start_position;
 	saucer_shape.setPosition(*position);
 }
+
+void Saucer::move() {
+	sf::Vector2f dir(-1 * MOVE_SPEED, 0);
+	saucer_shape.move(dir);
+}

@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include "Terrain.h"
 
 #define FUEL_TANK_HEIGHT 70
 #define FUEL_TANK_WIDTH 45
@@ -25,5 +26,5 @@ public:
 	void go_away(); //Teleports fuel tank offscreen 
 					//My lazy solution to deleting this instance
 	void come_back(sf::Vector2f start_position); //Teleports back onscreen for game restart
-
+	void move(); //Moves object left to scroll with the terrain
 };

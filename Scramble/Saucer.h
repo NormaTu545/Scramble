@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include "Terrain.h"
 
 #define SAUCER_HEIGHT 70
 #define SAUCER_WIDTH 80
@@ -21,4 +22,5 @@ public:
 	sf::RectangleShape* get_shape(); //passes copy of shape for drawing
 	void go_away(); //Teleports saucer offscreen 
 	void come_back(sf::Vector2f start_position); //Teleports back onscreen for game restart
+	void move(); //Moves object left to scroll with the terrain
 };

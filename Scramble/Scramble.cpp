@@ -25,6 +25,7 @@ int main() {
 	vector<Laser*> lasers;
 	vector<Bomb*> bombs;
 	bool game_over = false;
+	bool scroll_done = false;
 	bool fuel_tank_destroyed = false;
 	bool saucer_destroyed = false;
 	bool rocket_destroyed = false;
@@ -42,6 +43,7 @@ int main() {
 	sf::Text score_text;
 	sf::Text fuel_text;
 	sf::Text end_text;
+	sf::Text goal_text;
 
 	//Font is "karmatic_arcade" from dafont.com
 	sf::Font font;
@@ -63,6 +65,13 @@ int main() {
 	end_text.setPosition(WINDOW_WIDTH / 10, WINDOW_HEIGHT / 3);
 	end_text.setColor(sf::Color::White);
 	end_text.setString("GAME OVER!  PRESS -SPACE- TO PLAY AGAIN");
+
+	goal_text.setFont(font);
+	goal_text.setCharacterSize(35);
+	goal_text.setPosition(WINDOW_WIDTH - 25, WINDOW_HEIGHT / 8);
+	goal_text.setColor(sf::Color::Green);
+	goal_text.rotate(90);
+	goal_text.setString("END");
 
 	sf::RectangleShape greyBar(sf::Vector2f(360, 40));
 	greyBar.setPosition(FUEL_BAR_XPOS - 5, 5);
@@ -91,16 +100,16 @@ int main() {
 	/* Make a player */
 	Player player(WINDOW_WIDTH / 8, WINDOW_HEIGHT / 2);
 
-	/* Make a TEST Fuel Tank, Saucer, & Rocket */
-	FuelTank fuelTank(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4);
-	Saucer saucer(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4 + 100);
-	Rocket rocket(WINDOW_WIDTH / 2 + 200, WINDOW_HEIGHT - 100);
-
 	/* Make the horizontally scrolling terrain */
 	Terrain* ground = new Terrain();
 
 	vector<sf::RectangleShape*> terrainBlocks;
 	terrainBlocks = ground->terrain;
+
+	/* Make a TEST Fuel Tank, Saucer, & Rocket */
+	FuelTank fuelTank(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 200);
+	Saucer saucer(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4 + 100);
+	Rocket rocket(WINDOW_WIDTH / 2 + 200, WINDOW_HEIGHT - 100);
 
 	//Load & Set Up Background
 	sf::Texture outer_space;
@@ -158,13 +167,16 @@ int main() {
 				fuelTank.come_back(sf::Vector2f(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 3));
 				saucer.come_back(sf::Vector2f(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4));
 				rocket.come_back(sf::Vector2f(WINDOW_WIDTH / 2 + 300, WINDOW_HEIGHT / 3));
-				
+				rocket_flying = false;
 				//Restock on lives
 				for (int total_lives = 0; total_lives < MAX_LIVES; total_lives++) {
 					sf::RectangleShape* player_life_img = new sf::RectangleShape(sf::Vector2f(50.0f, 40.0f));
 					player_life_img->setTexture(&playerIMG);
 					lives.push_back(player_life_img);
 				}
+
+				//Restart the scrolling terrain blocks
+				ground->reset(); //WHAT THA FAAAACK WHY YOU NO WORK
 			}
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::F)) {
@@ -431,6 +443,9 @@ int main() {
 			window.draw(fuel_text);
 			window.draw(greyBar);
 			window.draw(fuelBar);
+
+			if (ground->scrolling_done())
+				window.draw(goal_text); //Reached end of level
 
 			if (game_over)
 				window.draw(end_text);
