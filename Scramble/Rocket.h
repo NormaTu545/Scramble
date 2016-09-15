@@ -20,6 +20,7 @@ private:
 	sf::Texture rocket_image;
 	sf::Texture flying_image;
 	sf::RectangleShape rocket_shape;
+	bool rocket_flying = false; //for toggling the two rocket image textures
 
 public:
 	sf::Vector2f moveDirection; //0 in X direction, 1 in Y direction
@@ -28,6 +29,8 @@ public:
 	sf::FloatRect get_position(); //for collision detection
 	sf::RectangleShape* get_shape(); //passes copy of shape for drawing
 
+	bool rocket_flying_state(); //returns rocket_flying
+	void toggle_rocket_flying_state(); //resets to !rocket_flying
 	void go_away(); //Teleports saucer offscreen 
 	void come_back(sf::Vector2f start_position); //Teleports back onscreen for game restart
 	void fly_up(); //Sends rocket flying upwards in attack mode

@@ -18,6 +18,7 @@
 #define FUEL_BAR_XPOS 635
 #define FUEL_LOSS_RATE 0.005f
 #define MAX_LIVES 3
+
 using namespace std;
 
 int main() {
@@ -29,14 +30,16 @@ int main() {
 	bool fuel_tank_destroyed = false;
 	bool saucer_destroyed = false;
 	bool rocket_destroyed = false;
-	bool rocket_flying = false;
+	bool fuel_tank_2_destroyed = false;
+	bool saucer_2_destroyed = false;
+	bool rocket_2_destroyed = false;
 	float current_fuel = 100; //Start 100% Full
 	int player_lives = MAX_LIVES; //Start with 3 lives
 	int score = 0;
 	sf::Vector2f death_position;  //Save point where player died
 
 	sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Scramble_Game");
-	
+
 	//--[Loading Game Stuff]-----------------------------------------------------------------
 
 	// [Heads Up Display set up]
@@ -106,10 +109,13 @@ int main() {
 	vector<sf::RectangleShape*> terrainBlocks;
 	terrainBlocks = ground->terrain;
 
-	/* Make a TEST Fuel Tank, Saucer, & Rocket */
-	FuelTank fuelTank(WINDOW_WIDTH / 2, WINDOW_HEIGHT - 200);
-	Saucer saucer(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 4 + 100);
-	Rocket rocket(WINDOW_WIDTH / 2 + 200, WINDOW_HEIGHT - 100);
+	/* Make two of each of the game objects: Fuel Tank, Saucer, & Rocket */
+	FuelTank fuelTank(ground->xPositions[9], WINDOW_HEIGHT - ground->yPositions[9] - FUEL_TANK_HEIGHT);
+	Saucer saucer(ground->xPositions[4], WINDOW_HEIGHT - ground->yPositions[4] - SAUCER_HEIGHT);
+	Rocket rocket(ground->xPositions[7], WINDOW_HEIGHT - ground->yPositions[7] - ROCKET_HEIGHT);
+	FuelTank fuelTank_2(ground->xPositions[13], WINDOW_HEIGHT - ground->yPositions[13] - FUEL_TANK_HEIGHT);
+	Saucer saucer_2(ground->xPositions[10], WINDOW_HEIGHT - ground->yPositions[10] - SAUCER_HEIGHT);
+	Rocket rocket_2(ground->xPositions[12], WINDOW_HEIGHT - ground->yPositions[12] - ROCKET_HEIGHT);
 
 	//Load & Set Up Background
 	sf::Texture outer_space;
@@ -121,7 +127,7 @@ int main() {
 
 	sf::Sprite background;
 	background.setTexture(outer_space);
-	
+
 	/* Scale background manually to fit the window */
 	background.setScale(1.6f, 1.5f);
 
@@ -152,7 +158,7 @@ int main() {
 			/* Pressing SPACE restarts the game completely */
 			if (game_over) {
 				game_over = false;
-				
+
 				// Return player position & starting values to where they started
 				player.setPosition(sf::Vector2f(WINDOW_WIDTH / 8, WINDOW_HEIGHT / 2));
 				score = 0;
@@ -163,11 +169,21 @@ int main() {
 				fuel_tank_destroyed = false;
 				saucer_destroyed = false;
 				rocket_destroyed = false;
-				
-				fuelTank.come_back(sf::Vector2f(WINDOW_WIDTH / 4, WINDOW_HEIGHT / 3));
-				saucer.come_back(sf::Vector2f(WINDOW_WIDTH / 2, WINDOW_HEIGHT / 4));
-				rocket.come_back(sf::Vector2f(WINDOW_WIDTH / 2 + 300, WINDOW_HEIGHT / 3));
-				rocket_flying = false;
+				fuel_tank_2_destroyed = false;
+				saucer_2_destroyed = false;
+				rocket_2_destroyed = false;
+
+				//Resets flying boolean to false
+				rocket.toggle_rocket_flying_state(); //assumes previous value was true
+				rocket_2.toggle_rocket_flying_state();
+
+				fuelTank.come_back(sf::Vector2f(ground->xPositions[9], WINDOW_HEIGHT - ground->yPositions[9] - FUEL_TANK_HEIGHT));
+				saucer.come_back(sf::Vector2f(ground->xPositions[4], WINDOW_HEIGHT - ground->yPositions[4] - SAUCER_HEIGHT));
+				rocket.come_back(sf::Vector2f(ground->xPositions[7], WINDOW_HEIGHT - ground->yPositions[7] - ROCKET_HEIGHT));
+				fuelTank_2.come_back(sf::Vector2f(ground->xPositions[13], WINDOW_HEIGHT - ground->yPositions[13] - FUEL_TANK_HEIGHT));
+				saucer_2.come_back(sf::Vector2f(ground->xPositions[10], WINDOW_HEIGHT - ground->yPositions[10] - SAUCER_HEIGHT));
+				rocket_2.come_back(sf::Vector2f(ground->xPositions[12], WINDOW_HEIGHT - ground->yPositions[12] - ROCKET_HEIGHT));
+
 				//Restock on lives
 				for (int total_lives = 0; total_lives < MAX_LIVES; total_lives++) {
 					sf::RectangleShape* player_life_img = new sf::RectangleShape(sf::Vector2f(50.0f, 40.0f));
@@ -176,7 +192,8 @@ int main() {
 				}
 
 				//Restart the scrolling terrain blocks
-				ground->reset(); //WHAT THA FAAAACK WHY YOU NO WORK
+				ground->toggle_scrolling_done();
+				ground->reset(); 
 			}
 		}
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::F)) {
@@ -217,22 +234,44 @@ int main() {
 		/* HANDLE ROCKET FLYING UP WHEN PLAYER IS W/IN VIEW OF ROCKET */
 
 		if (rocket.get_position().left - player.get_position().x <= TRIGGER_DISTANCE) {
-			rocket_flying = true;
+			//manually sets it so flying will trigger
+			rocket.toggle_rocket_flying_state(); //sets it to true
+
+		}
+		if (rocket_2.get_position().left - player.get_position().x <= TRIGGER_DISTANCE) {
+			//manually activate rocket 2 when within view
+			rocket_2.toggle_rocket_flying_state(); //sets it to true
 		}
 
-		if (rocket_flying) {
+		//Launch Rocket 1 if it is triggered
+		if (rocket.rocket_flying_state() == false) {
 			rocket.fly_up();
+			rocket.toggle_rocket_flying_state(); //now true
 
 			if (rocket.get_position().top <= 0) {
 				rocket.go_away();
 			}
 		}
 
+		//Launch Rocket 2 if it is triggered
+		if (rocket_2.rocket_flying_state() == false) {
+			rocket_2.fly_up();
+			rocket_2.toggle_rocket_flying_state(); //now is true
+
+			if (rocket_2.get_position().top <= 0) {
+				rocket_2.go_away();
+			}
+		}
+
+
 		/* HANDLE PLAYER GETTING HIT BY ANY OF THE GAME OBJECTS */
 		/* (Game object is removed when player collides with it) */
 		bool player_hit_fuel_tank = player.get_shape()->getGlobalBounds().intersects(fuelTank.get_position());
 		bool player_hit_saucer = player.get_shape()->getGlobalBounds().intersects(saucer.get_position());
 		bool player_hit_rocket = player.get_shape()->getGlobalBounds().intersects(rocket.get_position());
+		bool player_hit_fuel_tank_2 = player.get_shape()->getGlobalBounds().intersects(fuelTank_2.get_position());
+		bool player_hit_saucer_2 = player.get_shape()->getGlobalBounds().intersects(saucer_2.get_position());
+		bool player_hit_rocket_2 = player.get_shape()->getGlobalBounds().intersects(rocket_2.get_position());
 
 		if (player_hit_fuel_tank) {
 			current_fuel = 0; //make player lose a life & empty the fuel bar
@@ -249,6 +288,21 @@ int main() {
 			rocket.go_away();
 			rocket_destroyed = true;
 		}
+		if (player_hit_fuel_tank_2) {
+			current_fuel = 0; //make player lose a life & empty the fuel bar
+			fuelTank_2.go_away();
+			fuel_tank_2_destroyed = true;
+		}
+		if (player_hit_saucer_2) {
+			current_fuel = 0;
+			saucer_2.go_away();
+			saucer_2_destroyed = true;
+		}
+		if (player_hit_rocket_2) {
+			current_fuel = 0;
+			rocket_2.go_away();
+			rocket_2_destroyed = true;
+		}
 
 		/* HANDLE LASER DESTROYING GAME OBJECTS */
 
@@ -256,6 +310,9 @@ int main() {
 			bool hit_fuel_tank = (*lasers[i]).laser_shape.getGlobalBounds().intersects(fuelTank.get_position());
 			bool hit_saucer = (*lasers[i]).laser_shape.getGlobalBounds().intersects(saucer.get_position());
 			bool hit_rocket = (*lasers[i]).laser_shape.getGlobalBounds().intersects(rocket.get_position());
+			bool hit_fuel_tank_2 = (*lasers[i]).laser_shape.getGlobalBounds().intersects(fuelTank_2.get_position());
+			bool hit_saucer_2 = (*lasers[i]).laser_shape.getGlobalBounds().intersects(saucer_2.get_position());
+			bool hit_rocket_2 = (*lasers[i]).laser_shape.getGlobalBounds().intersects(rocket_2.get_position());
 
 			if (hit_fuel_tank) {
 				current_fuel += FUEL_AMOUNT;
@@ -277,7 +334,7 @@ int main() {
 			}
 
 			if (hit_rocket) {
-				if (!rocket_flying) {
+				if (rocket.rocket_flying_state() == false) {
 					score += ROCKET_SCORE_REWARD;
 				}
 				else {
@@ -290,7 +347,41 @@ int main() {
 				lasers.erase(lasers.begin() + i); //deletes null ptr
 				rocket_destroyed = true;
 			}
+			if (hit_fuel_tank_2) {
+				current_fuel += FUEL_AMOUNT;
+				score += FUEL_SCORE_REWARD;
+				fuelTank_2.go_away();
+
+				delete(lasers[i]); //laser instance is now null ptr
+				lasers.erase(lasers.begin() + i); //deletes null ptr
+				fuel_tank_2_destroyed = true;
+			}
+
+			if (hit_saucer_2) {
+				score += SAUCER_SCORE_REWARD;
+				saucer_2.go_away();
+
+				delete(lasers[i]); //laser instance is now null ptr
+				lasers.erase(lasers.begin() + i); //deletes null ptr
+				saucer_2_destroyed = true;
+			}
+
+			if (hit_rocket_2) {
+				if (rocket_2.rocket_flying_state() == false) {
+					score += ROCKET_SCORE_REWARD;
+				}
+				else {
+					score += FLYING_ROCKET_SCORE_REWARD;
+				}
+
+				rocket_2.go_away();
+
+				delete(lasers[i]); //laser instance is now null ptr
+				lasers.erase(lasers.begin() + i); //deletes null ptr
+				rocket_2_destroyed = true;
+			}
 		}
+
 
 		/* HANDLE BOMB DESTROYING GAME OBJECTS */
 
@@ -298,6 +389,9 @@ int main() {
 			bool hit_fuel_tank = (*bombs[j]).bomb_shape.getGlobalBounds().intersects(fuelTank.get_position());
 			bool hit_saucer = (*bombs[j]).bomb_shape.getGlobalBounds().intersects(saucer.get_position());
 			bool hit_rocket = (*bombs[j]).bomb_shape.getGlobalBounds().intersects(rocket.get_position());
+			bool hit_fuel_tank_2 = (*bombs[j]).bomb_shape.getGlobalBounds().intersects(fuelTank_2.get_position());
+			bool hit_saucer_2 = (*bombs[j]).bomb_shape.getGlobalBounds().intersects(saucer_2.get_position());
+			bool hit_rocket_2 = (*bombs[j]).bomb_shape.getGlobalBounds().intersects(rocket_2.get_position());
 
 			if (hit_fuel_tank) {
 				current_fuel += FUEL_AMOUNT;
@@ -319,7 +413,7 @@ int main() {
 			}
 
 			if (hit_rocket) {
-				if (!rocket_flying) {
+				if (rocket.rocket_flying_state() == false) {
 					score += ROCKET_SCORE_REWARD;
 				}
 				else {
@@ -332,7 +426,41 @@ int main() {
 				bombs.erase(bombs.begin() + j); //deletes null ptr
 				rocket_destroyed = true;
 			}
-		}
+
+			if (hit_fuel_tank_2) {
+				current_fuel += FUEL_AMOUNT;
+				score += FUEL_SCORE_REWARD;
+				fuelTank_2.go_away();
+
+				delete(bombs[j]); //bomb instance is now null ptr
+				bombs.erase(bombs.begin() + j); //deletes null ptr
+				fuel_tank_2_destroyed = true;
+			}
+
+			if (hit_saucer_2) {
+				score += SAUCER_SCORE_REWARD;
+				saucer_2.go_away();
+
+				delete(bombs[j]); //laser instance is now null ptr
+				bombs.erase(bombs.begin() + j); //deletes null ptr
+				saucer_2_destroyed = true;
+			}
+
+			if (hit_rocket_2) {
+				if (rocket_2.rocket_flying_state() == false) {
+					score += ROCKET_SCORE_REWARD;
+				}
+				else {
+					score += FLYING_ROCKET_SCORE_REWARD;
+				}
+
+				rocket_2.go_away();
+
+				delete(bombs[j]); //laser instance is now null ptr
+				bombs.erase(bombs.begin() + j); //deletes null ptr
+				rocket_2_destroyed = true;
+			}
+		} //end of for loop
 
 		//~~~~~~~~~~~~~~~~~~~~~[WINDOW UPDATE]~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -370,6 +498,14 @@ int main() {
 		else {
 			//Scrolling Terrain update
 			ground->move();
+
+			//Scrolling game objects
+			fuelTank.move();
+			saucer.move();
+			rocket.move();
+			fuelTank_2.move();
+			saucer_2.move();
+			rocket_2.move();
 
 			//Fuel Bar update
 			current_fuel -= FUEL_LOSS_RATE; //Slowly goes down every frame
@@ -444,21 +580,30 @@ int main() {
 			window.draw(greyBar);
 			window.draw(fuelBar);
 
-			if (ground->scrolling_done())
+			if (ground->scrolling_done()) {
 				window.draw(goal_text); //Reached end of level
+			}
 
-			if (game_over)
-				window.draw(end_text);
+			// Draw the Six Game Objects
 
-			if (!fuel_tank_destroyed) 
+			if (!fuel_tank_destroyed)
 				window.draw(*fuelTank.get_shape());
-			
-			if (!saucer_destroyed) 
+
+			if (!saucer_destroyed)
 				window.draw(*saucer.get_shape());
-			
-			if (!rocket_destroyed) 
+
+			if (!rocket_destroyed)
 				window.draw(*rocket.get_shape());
-			
+
+			if (!fuel_tank_2_destroyed)
+				window.draw(*fuelTank_2.get_shape());
+
+			if (!saucer_2_destroyed)
+				window.draw(*saucer_2.get_shape());
+
+			if (!rocket_2_destroyed)
+				window.draw(*rocket_2.get_shape());
+
 			window.draw(*player.get_shape());
 
 			//Draw any laser instances in the lasers vector
@@ -475,6 +620,10 @@ int main() {
 			for (int k = 0; k < terrainBlocks.size(); k++) {
 				window.draw(*terrainBlocks[k]);
 			}
+
+			//Draw the end results (EX: "You Win!") 
+			if (game_over)
+				window.draw(end_text);
 
 			window.display();
 		}

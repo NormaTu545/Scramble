@@ -16,6 +16,7 @@ class Terrain {
 private:
 	sf::Texture ground_image;
 	bool scroll_done = false;
+
 public:
 	Terrain(); //Constructor
 
@@ -27,6 +28,7 @@ public:
 	void move(); //chunks move left at a constant speed
 	void reset(); //for restarting the scrolling terrain over again 
 	bool scrolling_done(); //returns T/F if terrain is still scrolling
+    void toggle_scrolling_done(); //returns opposite of scroll_done
 
 	//Heights of each individual chunk, manually coded
 	float yPositions[TOTAL_BLOCKS] = {
@@ -37,12 +39,12 @@ public:
 		150,//4
 		110,//5
 		85, //6
-		50, //7
+		10, //7
 		20, //8 
 		60, //9
 		80, //10
-		420,//11
-		20, //12
+		400,//11
+		10, //12
 		50, //13
 		75, //14
 		20, //15 

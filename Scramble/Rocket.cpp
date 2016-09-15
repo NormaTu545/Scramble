@@ -31,6 +31,14 @@ sf::RectangleShape* Rocket::get_shape() {
 	return pointer;
 }
 
+bool Rocket::rocket_flying_state() {
+	return rocket_flying;
+}
+
+void Rocket::toggle_rocket_flying_state() {
+	rocket_flying = !rocket_flying;
+}
+
 void Rocket::go_away() {
 	position->y = -10000; //instantly goes way the hell offscreen
 	rocket_shape.setPosition(*position); //Actually update position

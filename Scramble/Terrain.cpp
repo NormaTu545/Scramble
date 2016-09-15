@@ -23,18 +23,19 @@ Terrain::Terrain() {
 }
 
 void Terrain::move() {
-	for (int i = 0; i < terrain.size(); i++) {
-		//Move blocks left while the 20 blocks are still onscreen
-		if (terrain[terrain.size() - 1]->getPosition().x > WINDOW_WIDTH - 150) {
+	if (terrain[terrain.size() - 1]->getPosition().x > WINDOW_WIDTH - 150) {
+		for (int i = 0; i < terrain.size(); i++) {
+			//Move blocks left while the 20 blocks are still onscreen
+
 			sf::Vector2f dir(-1 * MOVE_SPEED, 0);
 			terrain[i]->move(dir);
+
 		}
-		else {
-			scroll_done = true;
-		}
-		
+		deltaX += MOVE_SPEED;
 	}
-	deltaX += MOVE_SPEED;
+	else {
+		scroll_done = true;
+	}
 }
 
 void Terrain::reset() {
@@ -47,4 +48,8 @@ void Terrain::reset() {
 
 bool Terrain::scrolling_done() {
 	return scroll_done;
+}
+
+void Terrain::toggle_scrolling_done() {
+	scroll_done = !scroll_done;
 }
