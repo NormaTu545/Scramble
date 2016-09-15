@@ -26,6 +26,7 @@ int main() {
 	vector<Laser*> lasers;
 	vector<Bomb*> bombs;
 	bool game_over = false;
+	bool player_won = false;
 	bool scroll_done = false;
 	bool fuel_tank_destroyed = false;
 	bool saucer_destroyed = false;
@@ -158,6 +159,8 @@ int main() {
 			/* Pressing SPACE restarts the game completely */
 			if (game_over) {
 				game_over = false;
+				player_won = false;
+				end_text.setString("GAME OVER! PRESS -SPACE- TO PLAY AGAIN");
 
 				// Return player position & starting values to where they started
 				player.setPosition(sf::Vector2f(WINDOW_WIDTH / 8, WINDOW_HEIGHT / 2));
@@ -174,8 +177,8 @@ int main() {
 				rocket_2_destroyed = false;
 
 				//Resets flying boolean to false
-				rocket.toggle_rocket_flying_state(); //assumes previous value was true
-				rocket_2.toggle_rocket_flying_state();
+				rocket.set_rocket_flying_state(false); //assumes previous value was true
+				rocket_2.set_rocket_flying_state(false);
 
 				fuelTank.come_back(sf::Vector2f(ground->xPositions[9], WINDOW_HEIGHT - ground->yPositions[9] - FUEL_TANK_HEIGHT));
 				saucer.come_back(sf::Vector2f(ground->xPositions[4], WINDOW_HEIGHT - ground->yPositions[4] - SAUCER_HEIGHT));
@@ -185,14 +188,14 @@ int main() {
 				rocket_2.come_back(sf::Vector2f(ground->xPositions[12], WINDOW_HEIGHT - ground->yPositions[12] - ROCKET_HEIGHT));
 
 				//Restock on lives
-				for (int total_lives = 0; total_lives < MAX_LIVES; total_lives++) {
+				for (int total_lives = lives.size(); total_lives < MAX_LIVES; total_lives++) {
 					sf::RectangleShape* player_life_img = new sf::RectangleShape(sf::Vector2f(50.0f, 40.0f));
 					player_life_img->setTexture(&playerIMG);
 					lives.push_back(player_life_img);
 				}
 
 				//Restart the scrolling terrain blocks
-				ground->toggle_scrolling_done();
+				ground->set_scrolling_done(false);
 				ground->reset(); 
 			}
 		}
@@ -235,18 +238,17 @@ int main() {
 
 		if (rocket.get_position().left - player.get_position().x <= TRIGGER_DISTANCE) {
 			//manually sets it so flying will trigger
-			rocket.toggle_rocket_flying_state(); //sets it to true
+			rocket.set_rocket_flying_state(true); //sets it to true
 
 		}
 		if (rocket_2.get_position().left - player.get_position().x <= TRIGGER_DISTANCE) {
 			//manually activate rocket 2 when within view
-			rocket_2.toggle_rocket_flying_state(); //sets it to true
+			rocket_2.set_rocket_flying_state(true); //sets it to true
 		}
 
 		//Launch Rocket 1 if it is triggered
-		if (rocket.rocket_flying_state() == false) {
+		if (rocket.rocket_flying_state()) {
 			rocket.fly_up();
-			rocket.toggle_rocket_flying_state(); //now true
 
 			if (rocket.get_position().top <= 0) {
 				rocket.go_away();
@@ -254,15 +256,13 @@ int main() {
 		}
 
 		//Launch Rocket 2 if it is triggered
-		if (rocket_2.rocket_flying_state() == false) {
+		if (rocket_2.rocket_flying_state()) {
 			rocket_2.fly_up();
-			rocket_2.toggle_rocket_flying_state(); //now is true
 
 			if (rocket_2.get_position().top <= 0) {
 				rocket_2.go_away();
 			}
 		}
-
 
 		/* HANDLE PLAYER GETTING HIT BY ANY OF THE GAME OBJECTS */
 		/* (Game object is removed when player collides with it) */
@@ -272,6 +272,8 @@ int main() {
 		bool player_hit_fuel_tank_2 = player.get_shape()->getGlobalBounds().intersects(fuelTank_2.get_position());
 		bool player_hit_saucer_2 = player.get_shape()->getGlobalBounds().intersects(saucer_2.get_position());
 		bool player_hit_rocket_2 = player.get_shape()->getGlobalBounds().intersects(rocket_2.get_position());
+
+
 
 		if (player_hit_fuel_tank) {
 			current_fuel = 0; //make player lose a life & empty the fuel bar
@@ -496,6 +498,14 @@ int main() {
 		//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 		else {
+
+			bool player_hit_end = player.get_shape()->getGlobalBounds().intersects(goal_text.getGlobalBounds());
+			
+			if (player_hit_end && ground->scrolling_done()) {
+				player_won = true;
+				game_over = true;
+			}
+
 			//Scrolling Terrain update
 			ground->move();
 
@@ -571,7 +581,6 @@ int main() {
 					bombs.erase(instance);
 				}
 			}
-			//		} //End of ORIGINAL game not over check
 
 			//----------------[DRAWING]-----------------------//
 
@@ -622,8 +631,12 @@ int main() {
 			}
 
 			//Draw the end results (EX: "You Win!") 
-			if (game_over)
+			if (game_over) {
+				if (player_won)
+					end_text.setString("You Win! -SPACE- to play again");
+
 				window.draw(end_text);
+			}
 
 			window.display();
 		}

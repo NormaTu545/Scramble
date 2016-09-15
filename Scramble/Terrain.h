@@ -28,29 +28,29 @@ public:
 	void move(); //chunks move left at a constant speed
 	void reset(); //for restarting the scrolling terrain over again 
 	bool scrolling_done(); //returns T/F if terrain is still scrolling
-    void toggle_scrolling_done(); //returns opposite of scroll_done
+    void set_scrolling_done(bool value); //returns opposite of scroll_done
 
 	//Heights of each individual chunk, manually coded
 	float yPositions[TOTAL_BLOCKS] = {
-		50, //0
-		55, //1
-		75, //2
-		100,//3
-		150,//4
-		110,//5
-		85, //6
-		10, //7
-		20, //8 
-		60, //9
-		80, //10
-		400,//11
-		10, //12
-		50, //13
-		75, //14
-		20, //15 
-		300, //16 
-		400, //17
-		400,//18
-		400 //19
+		50,  //0
+		75,  //1
+		100, //2
+		75,  //3
+		200, //4 saucer_1 here
+		250, //5
+		100, //6
+		25,  //7 rocket_1 here
+		40,  //8 
+		100, //9 fuel_tank_1 here
+		250, //10 saucer_2 here
+		300, //11
+		100, //12 rocket_2 here
+		90,  //13 fuel_tank_2 here
+		75,  //14
+		20,  //15 
+		100, //16 
+		200, //17
+		250, //18
+		250  //19
 	};
 };

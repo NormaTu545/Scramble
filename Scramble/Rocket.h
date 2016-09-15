@@ -30,7 +30,7 @@ public:
 	sf::RectangleShape* get_shape(); //passes copy of shape for drawing
 
 	bool rocket_flying_state(); //returns rocket_flying
-	void toggle_rocket_flying_state(); //resets to !rocket_flying
+	void set_rocket_flying_state(bool b); //resets to !rocket_flying
 	void go_away(); //Teleports saucer offscreen 
 	void come_back(sf::Vector2f start_position); //Teleports back onscreen for game restart
 	void fly_up(); //Sends rocket flying upwards in attack mode

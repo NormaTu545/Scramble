@@ -35,8 +35,8 @@ bool Rocket::rocket_flying_state() {
 	return rocket_flying;
 }
 
-void Rocket::toggle_rocket_flying_state() {
-	rocket_flying = !rocket_flying;
+void Rocket::set_rocket_flying_state(bool b) {
+	rocket_flying =  b;
 }
 
 void Rocket::go_away() {

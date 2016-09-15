@@ -50,6 +50,6 @@ bool Terrain::scrolling_done() {
 	return scroll_done;
 }
 
-void Terrain::toggle_scrolling_done() {
-	scroll_done = !scroll_done;
+void Terrain::set_scrolling_done(bool value) {
+	scroll_done = value;
 }
